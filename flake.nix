@@ -26,10 +26,11 @@
     nixos-raspberrypi,
     sops-nix,
     ...
-  }:
+  }@inputs:
   {
     nixosConfigurations.rpi =
       nixos-raspberrypi.lib.nixosSystem {
+        specialArgs = inputs;
         modules = [
           { _module.args.self = self; }
 
