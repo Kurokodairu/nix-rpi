@@ -1,0 +1,6 @@
+result
+*.qcow2
+*.img
+secrets/*.age
+!secrets/.sops.yaml
+!secrets/secrets.yaml
