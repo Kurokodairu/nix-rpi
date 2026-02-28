@@ -43,10 +43,10 @@
           ./modules/avahi.nix
           ./modules/ssh.nix
           ./modules/users.nix
-          ./modules/wireguard.nix
           ./modules/packages.nix
           ./modules/auto-deploy.nix
           ./modules/networking.nix
+          ./modules/tailscale.nix
         ];
       };
   };

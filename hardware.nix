@@ -6,6 +6,11 @@
     fsType = "ext4";
   };
 
+  fileSystems."/boot/firmware" = {
+    device = "/dev/disk/by-label/FIRMWARE";
+    fsType = "vfat";
+  };
+
   swapDevices = [
     { device = "/swapfile"; size = 2048; }
   ];
