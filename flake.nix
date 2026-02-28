@@ -24,7 +24,6 @@
     self,
     nixpkgs,
     nixos-raspberrypi,
-    sops-nix,
     ...
   }@inputs:
   {
@@ -37,9 +36,6 @@
           # RPi4 hardware
           nixos-raspberrypi.nixosModules.raspberry-pi-4.base
           nixos-raspberrypi.nixosModules.raspberry-pi-4.display-vc4
-
-          # Sops
-          sops-nix.nixosModules.sops
 
           # config
           ./configuration.nix

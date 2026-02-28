@@ -18,17 +18,6 @@
 
   networking.hostName = "kuro-rpi";
 
-  # sops secret declarations
-  sops = {
-    defaultSopsFile = ./secrets/secrets.yaml;
-    age.keyFile = "/var/lib/sops-nix/age.key";
-
-    secrets = {
-      wifi_password = {};
-      wireguard_private_key = {};
-    };
-  };
-
   system.configurationRevision =
     self.rev or self.dirtyRev or "unknown";
 }

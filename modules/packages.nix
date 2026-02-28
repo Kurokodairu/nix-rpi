@@ -9,12 +9,9 @@
     tmux
     wget
     curl
-    wireguard-tools
     usbutils
     pciutils
     jq
     ripgrep
-    age
-    sops
   ];
 }

@@ -1,7 +1,6 @@
-{ pkgs, ... }:
+{ ... }:
 
 {
-  # mDNS — makes kuro-rpi.local work on the network
   services.avahi = {
     enable = true;
     nssmdns4 = true;

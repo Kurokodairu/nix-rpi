@@ -45,7 +45,6 @@ let
 
     echo "Deploy complete at: $(git rev-parse --short HEAD)"
 
-    # Reboot if kernel changed
     booted=$(readlink /run/booted-system/kernel 2>/dev/null || echo "")
     current=$(readlink /run/current-system/kernel 2>/dev/null || echo "")
     if [ -n "$booted" ] && [ "$booted" != "$current" ]; then
