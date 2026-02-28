@@ -13,5 +13,6 @@
     pciutils
     jq
     ripgrep
+    kitty.terminfo
   ];
 }
