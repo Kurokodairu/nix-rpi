@@ -14,5 +14,10 @@
     jq
     ripgrep
     kitty.terminfo
+    libgpiod
+    (python3.withPackages (ps: [
+      ps.gpiozero
+      ps.lgpio
+    ]))
   ];
 }
