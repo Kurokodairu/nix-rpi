@@ -1,3 +1,4 @@
+# nixos-rebuild switch --flake .#rpi --target-host kuro@kuro-rpi --sudo
 {
   description = "RPi - NixOS";
 
@@ -47,6 +48,7 @@
           ./modules/auto-deploy.nix
           ./modules/networking.nix
           ./modules/tailscale.nix
+          ./modules/scripts.nix
         ];
       };
   };
