@@ -29,14 +29,12 @@
 
   services.fstrim.enable = true;
 
-  # Compressed RAM swap first, small swapfile as a backstop for big nix evals
+  # Compressed RAM swap only. A swapfile is created on first boot *before*
+  # the root partition is grown, which fills the freshly flashed disk.
   zramSwap = {
     enable = true;
     memoryPercent = 50;
   };
-  swapDevices = [
-    { device = "/swapfile"; size = 2048; priority = 1; }
-  ];
   boot.kernel.sysctl."vm.swappiness" = 100; # prefer zram over dropping cache
 
   # Keep the journal small; flash doesn't need to hold weeks of logs

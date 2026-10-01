@@ -72,7 +72,8 @@ in
         };
       };
     };
-    networking.wireless.enable = lib.mkForce false;
+    # Don't touch networking.wireless: the NetworkManager module enables it
+    # (dbus-controlled) to provide wpa_supplicant. Disabling it kills WiFi.
 
     sops.secrets = lib.genAttrs
       (lib.unique (lib.mapAttrsToList (_: n: n.secret) cfg.networks
