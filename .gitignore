@@ -1,6 +1,7 @@
-result
+result*
 *.qcow2
 *.img
+*.img.zst
 secrets/*.age
 !secrets/.sops.yaml
 !secrets/secrets.yaml

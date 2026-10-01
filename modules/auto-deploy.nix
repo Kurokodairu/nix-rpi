@@ -4,6 +4,7 @@ let
   repoUrl = "https://github.com/Kurokodairu/nix-rpi.git";
   repoBranch = "main";
   repoDir = "/etc/nixos-config";
+  stateDir = "/var/lib/auto-deploy";
 
   deployScript = pkgs.writeShellScript "auto-deploy" ''
     set -euo pipefail
@@ -16,9 +17,6 @@ let
       pkgs.coreutils
     ]}"
 
-    LOGFILE="/var/log/auto-deploy.log"
-    exec >> "$LOGFILE" 2>&1
-    echo "────────────────────────────────────────"
     echo "Auto-deploy check: $(date)"
 
     if [ ! -d "${repoDir}/.git" ]; then
@@ -29,21 +27,39 @@ let
     cd ${repoDir}
     git fetch origin ${repoBranch}
 
-    LOCAL=$(git rev-parse HEAD)
+    # Compare against what was last *successfully* deployed, not the checkout,
+    # so a failed build is retried on the next run instead of being skipped
+    DEPLOYED=$(cat ${stateDir}/deployed-rev 2>/dev/null || echo none)
+    BAD=$(cat ${stateDir}/bad-rev 2>/dev/null || echo none)
     REMOTE=$(git rev-parse origin/${repoBranch})
 
-    if [ "$LOCAL" = "$REMOTE" ]; then
-      echo "No changes. Current: ''${LOCAL:0:8}"
+    if [ "$DEPLOYED" = "$REMOTE" ]; then
+      echo "No changes. Current: ''${REMOTE:0:8}"
+      exit 0
+    fi
+    if [ "$BAD" = "$REMOTE" ]; then
+      echo "''${REMOTE:0:8} was rolled back earlier; waiting for a new commit"
       exit 0
     fi
 
-    echo "Update found: ''${LOCAL:0:8} -> ''${REMOTE:0:8}"
+    echo "Update found: ''${DEPLOYED:0:8} -> ''${REMOTE:0:8}"
     git reset --hard origin/${repoBranch}
 
     echo "Rebuilding NixOS..."
-    nixos-rebuild switch --flake "${repoDir}#rpi" 2>&1
+    nixos-rebuild switch --flake "${repoDir}#rpi"
 
-    echo "Deploy complete at: $(git rev-parse --short HEAD)"
+    # Health check: if the new config cut us off from the network, undo it
+    sleep 20
+    if ! git ls-remote --exit-code origin ${repoBranch} >/dev/null 2>&1 \
+       || ! systemctl is-active --quiet sshd; then
+      echo "Health check FAILED after deploying ''${REMOTE:0:8} — rolling back"
+      echo "$REMOTE" > ${stateDir}/bad-rev
+      nixos-rebuild switch --rollback
+      exit 1
+    fi
+
+    echo "$REMOTE" > ${stateDir}/deployed-rev
+    echo "Deploy complete at: ''${REMOTE:0:8}"
 
     # Reboot if kernel changed
     booted=$(readlink /run/booted-system/kernel 2>/dev/null || echo "")
@@ -64,11 +80,16 @@ in
     description = "NixOS GitOps auto-deploy";
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
+    # Never let a deploy that switches networking kill itself mid-way
+    restartIfChanged = false;
 
     serviceConfig = {
       Type = "oneshot";
       ExecStart = deployScript;
-      TimeoutStartSec = "10min";
+      StateDirectory = "auto-deploy";
+      TimeoutStartSec = "1h";
+      Nice = 19;
+      IOSchedulingClass = "idle";
     };
   };
 
@@ -77,17 +98,9 @@ in
     wantedBy = [ "timers.target" ];
 
     timerConfig = {
-      OnBootSec = "2min";
-      OnUnitActiveSec = "5min";
-      RandomizedDelaySec = "30s";
+      OnBootSec = "5min";
+      OnUnitActiveSec = "15min";
+      RandomizedDelaySec = "1min";
     };
-  };
-
-  services.logrotate.settings.auto-deploy = {
-    files = [ "/var/log/auto-deploy.log" ];
-    frequency = "weekly";
-    rotate = 4;
-    compress = true;
-    missingok = true;
   };
 }
