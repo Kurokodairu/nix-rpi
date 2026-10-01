@@ -18,16 +18,25 @@
   # Ignore the dead route when the cable is unplugged
   boot.kernel.sysctl."net.ipv4.conf.all.ignore_routes_with_linkdown" = 1;
 
-  networking.networkmanager.ensureProfiles.profiles.usb-gadget = {
-    connection = {
-      id = "usb-gadget";
-      type = "ethernet";
-      interface-name = "usb0";
-      autoconnect = "true";
-    };
-    # "shared" = Pi runs DHCP/DNS for the laptop on this link
-    ipv4 = { method = "shared"; address1 = "10.55.0.1/24"; };
-    ipv6.method = "link-local";
+  # A static keyfile rather than ensureProfiles: ensureProfiles also loads the
+  # sops WiFi secrets, and this rescue link must work even when those fail.
+  # "shared" = Pi runs DHCP for the laptop on this link
+  environment.etc."NetworkManager/system-connections/usb-gadget.nmconnection" = {
+    mode = "0600";
+    text = ''
+      [connection]
+      id=usb-gadget
+      type=ethernet
+      interface-name=usb0
+      autoconnect=true
+
+      [ipv4]
+      method=shared
+      address1=10.55.0.1/24
+
+      [ipv6]
+      method=link-local
+    '';
   };
 
   # Hand out addresses but no gateway/DNS, so the laptop keeps using its own

@@ -35,12 +35,30 @@ lsblk -o NAME,SIZE,MODEL,TRAN,LABEL,MOUNTPOINT "$DEV"
 read -rp "ERASE EVERYTHING on $DEV and flash $(basename "$IMG")? type YES: " ok
 [ "$ok" = "YES" ] || { echo "aborted"; exit 1; }
 
+img_cat() {
+  case "$IMG" in
+    *.zst) zstdcat "$IMG" ;;
+    *) cat "$IMG" ;;
+  esac
+}
+
 echo "[2/4] Flashing..."
 for p in $(lsblk -nlo PATH "$DEV" | tail -n +2); do sudo umount "$p" 2>/dev/null || true; done
-case "$IMG" in
-  *.zst) zstdcat "$IMG" ;;
-  *) cat "$IMG" ;;
-esac | sudo dd of="$DEV" bs=4M conv=fsync status=progress
+img_cat | sudo dd of="$DEV" bs=4M conv=fsync status=progress
+
+# Read everything back straight from the drive (bypassing the page cache).
+# Cheap/fake-capacity sticks silently corrupt data; catch that here instead
+# of debugging a Pi whose binaries are garbage.
+echo "Verifying written data..."
+res=$(img_cat | cmp - <(sudo dd if="$DEV" bs=4M iflag=direct status=none) 2>&1 || true)
+case "$res" in
+  *"EOF on -"*) echo "  verify OK" ;;
+  *)
+    echo "  VERIFY FAILED: $res"
+    echo "  This drive does not store data reliably (failing or fake-capacity). Use another one."
+    exit 1
+    ;;
+esac
 sudo partprobe "$DEV" 2>/dev/null || true
 sleep 2
 
