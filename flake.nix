@@ -58,6 +58,7 @@
           ./modules/power.nix
           ./modules/networking.nix
           ./modules/usb-gadget.nix
+          ./modules/storage.nix
           ./modules/avahi.nix
           ./modules/ssh.nix
           ./modules/users.nix

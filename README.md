@@ -16,6 +16,7 @@ Built on [nvmd/nixos-raspberrypi](https://github.com/nvmd/nixos-raspberrypi)
 | `modules/first-boot.nix` | imports `age.key` from the FIRMWARE partition on first boot |
 | `modules/networking.nix` | NetworkManager WiFi from sops, optional fallback AP |
 | `modules/usb-gadget.nix` | USB-C ethernet: laptop powers the Pi and gets `10.55.0.1` |
+| `modules/storage.nix` | SD card (or any drive) labelled `PISTORAGE` → `/srv/storage`, optional |
 | `modules/power.nix` | ondemand governor, `pi-status`, shutdown pin, `kuro.power.lowPower` |
 | `modules/homelab.nix` | Tailscale (subnet router/exit node capable), node-exporter :9100 |
 | `modules/packages.nix` | I2C/SPI on, GPIO/serial/network tools, podman |
