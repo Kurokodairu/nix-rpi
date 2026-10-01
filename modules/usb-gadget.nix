@@ -15,6 +15,12 @@
     options g_ether host_addr=02:6b:75:72:6f:01 dev_addr=02:6b:75:72:6f:02
   '';
 
+  # NetworkManager's 85-nm-unmanaged.rules ignores USB gadget interfaces by
+  # default, so usb0 would never come up. 99-local.rules runs later and wins.
+  services.udev.extraRules = ''
+    ENV{DEVTYPE}=="gadget", ENV{NM_UNMANAGED}="0"
+  '';
+
   # Ignore the dead route when the cable is unplugged
   boot.kernel.sysctl."net.ipv4.conf.all.ignore_routes_with_linkdown" = 1;
 
