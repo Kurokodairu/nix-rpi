@@ -4,7 +4,7 @@ let
   cfg = config.kuro.power;
 
   pi-status = pkgs.writeShellScriptBin "pi-status" ''
-    export PATH=${lib.makeBinPath [ pkgs.raspberrypi-utils pkgs.coreutils pkgs.gawk pkgs.iproute2 ]}:$PATH
+    export PATH=${lib.makeBinPath [ pkgs.raspberrypi-utils pkgs.procps pkgs.coreutils pkgs.gawk pkgs.iproute2 ]}:$PATH
 
     t=$(vcgencmd get_throttled 2>/dev/null | cut -d= -f2)
     t=$(( ''${t:-0} ))
