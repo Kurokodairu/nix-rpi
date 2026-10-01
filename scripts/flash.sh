@@ -57,7 +57,8 @@ img_cat | sudo dd of="$DEV" bs=4M conv=fsync status=progress
 echo "Verifying written data..."
 res=$(img_cat | cmp - <(sudo dd if="$DEV" bs=4M iflag=direct status=none) 2>&1 || true)
 case "$res" in
-  *"EOF on -"*) echo "  verify OK" ;;
+  # Image ran out first = every byte matched. cmp quotes '-' differently per locale.
+  *"EOF on -"* | *"EOF on ‘-’"* | *"EOF on '-'"*) echo "  verify OK" ;;
   *)
     echo "  VERIFY FAILED: $res"
     echo "  This drive does not store data reliably (failing or fake-capacity). Use another one."
