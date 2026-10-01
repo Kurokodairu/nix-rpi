@@ -26,8 +26,13 @@ if lsblk -no MOUNTPOINT "$DEV" | grep -qx '/'; then
   exit 1
 fi
 
-echo "[1/4] Building image..."
-nix build .#image --out-link result-image --max-jobs auto
+# NO_BUILD=1 flashes the existing result-image (building under emulation is slow)
+if [ -n "${NO_BUILD:-}" ] && [ -e result-image ]; then
+  echo "[1/4] Using existing result-image"
+else
+  echo "[1/4] Building image..."
+  nix build .#image --out-link result-image --max-jobs auto
+fi
 IMG=$(echo result-image/sd-image/*.img*)
 
 echo
